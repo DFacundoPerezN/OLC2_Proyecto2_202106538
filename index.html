@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oakland</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button id="open-file">Abrir archivo</button>
+        <input type="file" id="fileInput" style="display: none;">
+        <button id="save-file">Guardar archivo .oak</button>
+        <button id="execute">Compilar</button>
+        <button id="save-output-file">Guardar archivo traducido Assambly</button>
+        <button id="reports">Reportes</button>
+    </div>
+    <div class="main-content">
+        <div class="text-area">
+            <label for="code">Código:</label>
+            <div class="code-area">
+                <div class="line-numbers" id="line-numbers">1</div>
+                <textarea id="code" class="code" placeholder="Escribe tu código aquí..."></textarea>
+            </div>
+        </div>
+        <div class="text-area">
+            <label for="console">Salida:</label>
+            <textarea id="console" class="console" readonly placeholder="Resultados de la consola..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        const openFileButton = document.getElementById('open-file');
+        const fileInput = document.getElementById('fileInput');
+        const codeArea = document.getElementById('code');
+    
+        // Cuando se presiona el botón "Abrir archivo"
+        openFileButton.addEventListener('click', () => {
+            fileInput.click();  // Simula un clic en el input de archivos
+        });
+    
+        // Leer el archivo cuando se selecciona
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    codeArea.value = e.target.result;  // Escribe el contenido del archivo en el área de código
+                    updateLineNumbers();  // Actualiza los números de línea
+                };
+                reader.readAsText(file);  // Lee el archivo como texto
+            }
+        });
+        const lineNumbers = document.getElementById('line-numbers');
+
+        codeArea.addEventListener('input', updateLineNumbers);
+        codeArea.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = codeArea.scrollTop;
+        });
+
+        function updateLineNumbers() {
+            const lines = codeArea.value.split('\n').length;
+            lineNumbers.innerHTML = Array(lines)
+                .fill(0)
+                .map((_, i) => i + 1)
+                .join('<br>');
+        }
+
+        updateLineNumbers();
+    </script>
+</body>
+<script type="module" src="main.js"></script>
+<script src="https://unpkg.com/peggy"></script>
+<script src="https://cdn.jsdelivr.net/npm/peggy"></script>
+</html>

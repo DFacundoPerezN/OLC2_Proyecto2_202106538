@@ -1,0 +1,94 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    background-color: #252525;
+    color: #c0c0c0;
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #999;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar button {
+    background-color: #3a3d41;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.sidebar button:hover {
+    background-color: #444444;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.main-content label {
+    font-weight: bold;
+    color: #c0c0c0;
+}
+
+.code-area {
+    position: relative;
+    height: 90%; /* Ajusta la altura del área de código */
+    display: flex;
+    background-color: #1e1e1e;
+    border: 1px solid #3a3d41;
+}
+
+.line-numbers {
+    background-color: #252526;
+    border-right: 1px solid #3a3d41;
+    padding: 10px;
+    text-align: right;
+    color: #858585;
+    user-select: none;
+    overflow: hidden;
+    line-height: 1.25em; /* Ajusta el line-height a la altura del código */
+}
+
+.code {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    resize: none;
+    font-family: monospace;
+    line-height: 1.5em; /* Mantén el mismo line-height que en .line-numbers */
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    overflow: auto;
+    white-space: nowrap;
+    /*height: 100%;*/
+}
+
+.text-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#console {
+    height: 70%; /* Aumenta la altura del área de consola */
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    border: 1px solid #3a3d41;
+    padding: 10px;
+    resize: vertical;
+    font-family: monospace;
+    overflow: auto;
+}
