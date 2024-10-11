@@ -1,6 +1,7 @@
 import { globalPower, addSymbol } from "./compiler.js";
 import { getType, getDefaultValue, getNewType } from "./synthesis.js";
-import { translateExpression, translatePrint } from "./expresions.js";
+import { translateExpression } from "./expresions.js";
+import { translatePrint } from "./print.js";
 
 function translateSentence (node) {
     if (node.type === 'declaration') {
