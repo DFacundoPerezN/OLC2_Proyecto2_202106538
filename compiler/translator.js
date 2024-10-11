@@ -48,10 +48,13 @@ function translateSentence (node) {
 function translateDeclaration(node){
     let type = node.children[0];
     let id = node.children[1].value;
-    let value = "0";
+    let value = "null";
     //let defaultValue = "0";
     if (node.children.length === 2) {    //case: <type> <id> ";"
-        value = getDefaultValue(type);        
+        //add the variable to the map; the id is the key to an object with the type and the value
+        globalPower.IdMap.set(id, { type, value }); 
+        //Translate the declaration with default value
+        value = getDefaultValue(type)
     } 
     else { //If the declaration has a value
         if (type === "var") { //case: "var" <id> "=" <value> ";"        
@@ -74,20 +77,23 @@ function translateDeclaration(node){
             value = getDefaultValue(type);
             //Translate the value
             let exp = translateExpression(node.children[2]);
+            globalPower.output += "\t" + "la t4, "+ id + "\t# Cargar la dirección\n";
+            //If the type is float, the value must be stored in a floating point register
             if( type == 'float'){
-                globalPower.output += "\t" + "la t4, "+ id + "\t# Cargar la dirección\n";
                 globalPower.output += "\t" + "fsw "+ exp+ ", (t4) \t# Almacenar el flotante\n";
-            } else {
-                globalPower.output += "\t" + "la t4, "+ id + "\n";
+            } //If the type is char or boolean, the value must be stored in a byte
+            else if (type === 'char' || type === 'boolean') { 
+                globalPower.output += "\t" + "sb "+ exp+ ", (t4)\n";
+            }
+            else {
                 globalPower.output += "\t" + "sw "+ exp+ ", (t4)\n";
             }
         }
-
+        //add the variable to the map; the id is the key to an object with the type and the value
+        globalPower.IdMap.set(id, { type, value }); 
     }
      //Translate the declaration with default value
     globalPower.data += "\t" + id + ": ."+getNewType(type)+" " + value + "\n";
-    //add the variable to the map; the id is the key to an object with the type and the value
-    globalPower.IdMap.set(id, { type, value }); 
     addSymbol(id, type, 'variable', node.children[1].line, node.children[1].column);
     console.log(globalPower.IdMap);
     return globalPower.IdMap;

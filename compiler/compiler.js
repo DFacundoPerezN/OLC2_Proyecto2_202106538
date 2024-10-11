@@ -37,11 +37,17 @@ class Compiler {
     '\tla a1, newline         # Cargar la direccion del salto de linea"\n'+
     '\tli a2, 1               # Longitud de 1 byte"\n'+
     '\tjal t4, printString \n'+
-    '\tret\n';
+    '\tret\n'+
+    //Print Integer function
+    'printInt:\n'+
+    '\tlw a0, (a1)\n'+
+	'\tli a7, 1 \n'+
+	'\tecall\n'+
+    '\tret\n';;
     }   
 
     resetOutput() {  
-        globalPower.data = '.data\n\tnewline: .byte 10\n';
+        globalPower.data = '.data\n\tnewline: .byte 10\n\tnull: .string "null"\n';
         globalPower.output = '.text \n.globl _start\n\n_start:\n\n';
         globalPower.tagCounter = 0;
         globalPower.printCounter = 0;

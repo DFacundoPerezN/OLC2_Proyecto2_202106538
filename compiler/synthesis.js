@@ -1,3 +1,5 @@
+import { globalPower } from "./compiler.js";
+
 // Función para obtener el valor por defecto de un tipo de variable
 function getDefaultValue(type) {
     switch (type) {
