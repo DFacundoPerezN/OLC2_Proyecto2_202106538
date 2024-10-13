@@ -21,7 +21,7 @@ class Compiler {
     }
    
     getOutput() {
-    return globalPower.data + globalPower.output + '\n\n'+
+    return globalPower.data + globalPower.output + '\n'+
     'endProgram:    # Finalizar el programa \n'+
     '\tli   a0, 0     \n'+
     '\tli   a7, 93      # Syscall para salir del programa\n'+

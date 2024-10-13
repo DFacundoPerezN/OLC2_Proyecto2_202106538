@@ -82,7 +82,9 @@ function getType(node){
             return "Semantic Error: Operands must be int or float → "+left+" "+right;
         }
     }
-    else if(node.type == "%"){
+    else if(node.type == "%"){ 
+        const left = getType(node.children[0]);
+        const right = getType(node.children[1]);
         if(left == "int" && right == "int"){
             return "int";
         } else {

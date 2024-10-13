@@ -47,7 +47,7 @@ function translatePrint(node){
         } else if(type == "float"){
             //translateExpression of float
             var exp = translateExpression(child);
-            globalPower.output += "\t"+" fsgnj.s fa0, "+ exp +", "+exp+"\t #Copiar el float: "+exp+" a fa0\n";
+            globalPower.output += "\t"+"fsgnj.s fa0, "+ exp +", "+exp+"\t #Copiar el float: "+exp+" a fa0\n";
             globalPower.output += "\tcall printFloat\n";
         } else {
             //translateExpression

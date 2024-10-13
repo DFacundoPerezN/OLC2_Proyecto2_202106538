@@ -26,7 +26,7 @@ execute.addEventListener("click", () => {
   translator.resetIdMap();
   translator.resetOutput();
   
-  const code = input.value;
+  const code = input.value+'\n';
   const tree =  parse(code);
   console.log(tree);
   translator.addAst(tree);
