@@ -137,9 +137,13 @@ function getType(node){
     }
     else if(node.type == "identifier"){
         let id = node.value;
-        let type = globalPower.IdMap.get(id).type;
-        console.log("Type of "+id+" is "+type);
-        return type;
+        try {
+            let type = globalPower.IdMap.get(id).type;
+            return type;
+        } catch (e) {
+            console.log("Error: Variable "+id+" not declared");
+            throw "Error: Variable "+id+" not declared";
+        }
     }
 }
 

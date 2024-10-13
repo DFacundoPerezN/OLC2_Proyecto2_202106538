@@ -1,5 +1,6 @@
 import { getType } from "./synthesis.js";
 import { globalPower } from "./compiler.js";
+import { translateExpression } from "./expresions.js";
 
 function translatePrint(node){
     for (const child of node.children) {
@@ -21,16 +22,15 @@ function translatePrint(node){
                 // globalPower.output += "\t"+"li a7, 1\n";
                 // globalPower.output += "\t"+"ecall\n";
             } else if(varType == "float"){
-                globalPower.output += "\t#Todavia no se implementa el print de floats\n";
-                // globalPower.output += "\t"+"la a0, " + id + "\n";
-                // globalPower.output += "\t"+"li a7, 2\n";
-                // globalPower.output += "\t"+"ecall\n";
+                globalPower.output += "\tla a1, "+ id+"\n";
+                globalPower.output += "\t"+"flw fa0, (a1)\n";
+                globalPower.output += "\tcall printFloat\n";
             } else if(varType == "char"){
                 globalPower.output += "\tla a1, " + id + "\n";
-                globalPower.output += "\tli a2, 1\n";
+                globalPower.output += "\tli a2, 1\t #espacio a imprimir: 1\n";
                 globalPower.output += "\tcall printString\n";
             } else if(varType == "string"){
-                var varLength = globalPower.IdMap.get(id).length;
+                var varLength = globalPower.IdMap.get(id).value.length;
                 globalPower.output += "\t"+"la a1, " + id + "\n";
                 globalPower.output += "\t"+"li a2, "+(varLength-1)+"\n";
                 globalPower.output += "\t"+"call printString\n";
@@ -44,9 +44,15 @@ function translatePrint(node){
             globalPower.output += "\t"+"call printString\n";
             //incrementar contador de strings
             globalPower.printCounter++;
+        } else if(type == "float"){
+            //translateExpression of float
+            var exp = translateExpression(child);
+            globalPower.output += "\t"+" fsgnj.s fa0, "+ exp +", "+exp+"\t #Copiar el float: "+exp+" a fa0\n";
+            globalPower.output += "\tcall printFloat\n";
         } else {
             //translateExpression
-            globalPower.output += "\t"+"li a0, " + child.value + "\n";
+            var exp = translateExpression(child);
+            globalPower.output += "\t"+"mv a0, " + exp + "\n";
             globalPower.output += "\t"+"li a7, 1\n";
             globalPower.output += "\t"+"ecall\n";
         }

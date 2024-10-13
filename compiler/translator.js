@@ -44,6 +44,8 @@ function translateSentence (node) {
     // } else if(node.type === 'return'){
     //     return 'return';
     // }
+    
+    globalPower.output += "\n";
 }
 function translateDeclaration(node){
     let type = node.children[0];
@@ -85,9 +87,13 @@ function translateDeclaration(node){
             else if (type === 'char' || type === 'boolean') { 
                 globalPower.output += "\t" + "sb "+ exp+ ", (t4)\n";
             }
-            else {
+            else if (type === 'int'){//If the type is int, the value must be stored in a word
                 globalPower.output += "\t" + "sw "+ exp+ ", (t4)\n";
+            } else {
+                globalPower.output += "\t ##TYPE: "+type+" IS NOT IMPLEMENTED YET\n";
+                
             }
+
         }
         //add the variable to the map; the id is the key to an object with the type and the value
         globalPower.IdMap.set(id, { type, value }); 
@@ -98,6 +104,30 @@ function translateDeclaration(node){
     console.log(globalPower.IdMap);
     return globalPower.IdMap;
 }
+
+function translateAssignment(node){
+    //first node is de id
+    let id = node.children[0].value;
+    //second node is the expression value
+    let exp = translateExpression(node.children[1]);
+    //get the type of the expression
+    let type = getType(node.children[1]);
+    globalPower.output += "\t" + "la t4, "+ id + "\t# Cargar la dirección\n";
+    //If the type is float, the value must be stored in a floating point register
+    if( type == 'float'){
+        globalPower.output += "\t" + "fsw "+ exp+ ", (t4) \t# Almacenar el flotante\n";
+    } //If the type is char or boolean, the value must be stored in a byte
+    else if (type === 'char' || type === 'boolean') { 
+        globalPower.output += "\t" + "sb "+ exp+ ", (t4) \t# Almacenar el byte\n";
+    }
+    else if (type === 'int'){//If the type is int, the value must be stored in a word
+        globalPower.output += "\t" + "sw "+ exp+ ", (t4) \t# Almacenar el int(word)\n";
+    } else {
+        globalPower.output += "\t ##TYPE: "+type+" IS NOT IMPLEMENTED YET\n";
+        
+    }
+}
+
 
 export {
     translateSentence
