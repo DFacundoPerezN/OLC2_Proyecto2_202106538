@@ -40,7 +40,6 @@ class Compiler {
     '\tret\n'+
     //Print Integer function
     'printInt:\n'+
-    '\tlw a0, (a1)\n'+
 	'\tli a7, 1 \n'+
 	'\tecall\n'+
     '\tret\n'+
@@ -54,7 +53,7 @@ class Compiler {
 
     resetOutput() {  
         globalPower.data = '.data\n\tnewline: .byte 10\n\tnull: .string "null"\n\ttrue: .string "true"\n\tfalse: .string "false"\n';
-        globalPower.output = '.text \n.globl _start\n\n_start:\n\n';
+        globalPower.output = '.text \n.globl _start\n\n_start:\n';
         globalPower.tagCounter = 0;
         globalPower.printCounter = 0;
     }

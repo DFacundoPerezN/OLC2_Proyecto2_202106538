@@ -1,5 +1,6 @@
 import { Compiler } from "./compiler/compiler.js";
 import { parse } from "./parser/parser.js";
+import { resetUltraPointer } from "./compiler/expresions.js";
 // import {executeSentences} from "./synthesis/synthesis.js";
 // import {Synthesis} from "./synthesis/synthesis.js";
 
@@ -21,7 +22,7 @@ document.getElementById("console").addEventListener("keydown", (e) => {
 });
 
 execute.addEventListener("click", () => {
-
+  //resetUltraPointer();
   const translator = new Compiler();
   translator.resetIdMap();
   translator.resetOutput();

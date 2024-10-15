@@ -2,6 +2,11 @@ import { globalPower } from "./compiler.js";
 import { getType } from "./synthesis.js";
 import { translateSentence } from "./translator.js";
 
+let ultraPointer = 0;
+function resetUltraPointer() {
+    ultraPointer = 0;
+}
+
 function translateExpression(node) {
     console.log('translating Expression: '+ JSON.stringify(node, null, 2));
     if ( node.children.length == 0 ) {
@@ -55,9 +60,11 @@ function translateExpression(node) {
             var rightType = getType(node.children[1]);
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
+                floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "fadd.s ft0, ft1, ft2\t# Sumar flotantes\n";
                 return "ft0";
-            } else { //if left is int
+            } else { //if left and right are int
+                intOperands(); //Mover a t1 y t2 los operandos
                 globalPower.output += "\tadd t0, t1, t2\t# Sumar enteros\n";
                 return "t0";
             }
@@ -66,12 +73,21 @@ function translateExpression(node) {
             if (node.children.length == 1) {
                 console.log('Unary minus');
                 var rightType = getType(node.children[0]);
-                var right = translateExpression(node.children[0]);
+                var right = translateExpression(node.children[0]);//return t0 or ft0
                 if (rightType == "float") {
-                    globalPower.output += "\t" + "fneg.s ft0, "+right+" \t# Negative float\n";
+                    //en ft0 esta el que debemos negar
+                    //globalPower.output += "\t"+"flw ft0, "+ultraPointer+"(sp)\t# Mover a ft0 el flotante\n";
+                    //ultraPointer -= 4;
+                    globalPower.output += "\t" + "fneg.s ft0, ft0 \t# Negative float\n";
+                    globalPower.output += "\t" + "fsw ft0, "+ultraPointer+"(sp)\t# Guardar el flotante al stack\n";
+                    ultraPointer += 4;
                     return "ft0";
                 } else { //if right is int
-                    globalPower.output += "\tneg t0, "+right+"\t# Negative\n";
+                    //globalPower.output += "\t"+"lw t0, "+ultraPointer+"(sp)\t# Mover a t0 el entero\n";
+                    //ultraPointer -= 4;
+                    globalPower.output += "\tneg t0, t0\t# Negative\n";
+                    globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack\n";
+                    ultraPointer += 4;
                     return "t0";
                 }
             } else {
@@ -79,9 +95,11 @@ function translateExpression(node) {
                 var rightType = getType(node.children[1]);
                 aritmeticTraductionBase(node, leftType, rightType);
                 if (leftType == "float" || rightType == "float") {
+                    floatOperands(); //Mover a ft1 y ft2 los operandos
                     globalPower.output += "\t" + "fsub.s ft0, ft1, ft2\t# Restar flotantes\n";
                     return "ft0";
                 } else { //if left is int
+                    intOperands(); //Mover a t1 y t2 los operandos
                     globalPower.output += "\tsub t0, t1, t2\t# Restar enteros\n";
                     return "t0";
                 }
@@ -92,9 +110,11 @@ function translateExpression(node) {
             var rightType = getType(node.children[1]);
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
+                floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "fmul.s ft0, ft1, ft2\t# Multiplicar flotantes\n";
                 return "ft0";
             } else { //if left and right are int
+                intOperands(); //Mover a t1 y t2 los operandos
                 globalPower.output += "\tmul t0, t1, t2\t# Multiplicar enteros\n";
                 return "t0";
             }
@@ -104,9 +124,11 @@ function translateExpression(node) {
             var rightType = getType(node.children[1]);
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
+                floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "fdiv.s ft0, ft1, ft2\t# Dividir flotantes\n";
                 return "ft0";
             } else { //if are Integers
+                intOperands(); //Mover a t1 y t2 los operandos
                 globalPower.output += "\tdiv t0, t1, t2\t# Dividir enteros\n";
                 return "t0";
             }
@@ -118,42 +140,68 @@ function translateExpression(node) {
             if (leftType == "float" || rightType == "float") {
                 console.log('Error: Operands must be int → '+leftType+' '+rightType);
             } else { //if are Integers
+                intOperands(); //Mover a t1 y t2 los operandos
                 globalPower.output += "\trem t0, t1, t2\t# Modulo enteros\n";
                 return "t0";
             }
+        } else{
+            console.log('Not implemented yet'); 
+            globalPower.output += "\t"+"li t0, " + node.value + "\n";
+            return "t0";
         }
-        console.log('Not implemented yet'); 
-        globalPower.output += "\t"+"li t0, " + node.value + "\n";
-        return "t0";
 
     }
+}
+
+function intOperands() {
+    globalPower.output += "\t"+"lw t2, "+ultraPointer+"(sp)\t# Mover a t2 segundo operador\n";
+    ultraPointer -= 4;
+    globalPower.output += "\t"+"lw t1, "+ultraPointer+"(sp)\t# Mover a t1 el primer operador\n";
+    //ultraPointer -= 4;
+}
+
+function floatOperands() {
+    globalPower.output += "\t"+"flw ft2, "+ultraPointer+"(sp)\t# Mover a ft2 segundo operador\n";
+    ultraPointer -= 4;
+    globalPower.output += "\t"+"flw ft1, "+ultraPointer+"(sp)\t# Mover a ft1 el primer operador\n";
+    //ultraPointer -= 4;
 }
 
 function aritmeticTraductionBase(node, leftType, rightType) {//Can be improved to use less parameters and less registers
     if (leftType == "float") {
         var left = translateExpression(node.children[0]); // return ft0
-        globalPower.output += "\tfsgnj.s ft1, "+left+", "+left+"\t# Copiar el flotante del primer operador en ft1\n";
+        //globalPower.output += "\tfmv.s ft1, ft0\t# Copiar el flotante del primer operador en ft1\n";
+        globalPower.output += "\t" + "fsw ft0, "+ultraPointer+"(sp)\t# Mover el primer flotante al stack\n";
+        ultraPointer += 4;
         var right = translateExpression(node.children[1]); //if float, return ft0, if int, return t0
         if (rightType == "int") { //need to convert right to float
-            globalPower.output += "\t" + "fcvt.s.w ft2, "+right+"\t# Convertir 2do operador a flotante en ft2\n";
+            globalPower.output += "\t" + "fcvt.s.w ft2, t0\t# Convertir 2do operador a flotante en ft2\n";
+            globalPower.output += "\t" + "fsw ft2, "+ultraPointer+"(sp)\t# Mover el flotante al stack\n";
         } else { //both are float
-            globalPower.output += "\tfsgnj.s ft2, "+right+", "+right+"\t# Copiar el flotante del 2do operador en ft2\n";
+            //globalPower.output += "\tfmv.s ft2, ft0\t# Copiar el flotante del 2do operador en ft2\n";
+            globalPower.output += "\t" + "fsw ft0, "+ultraPointer+"(sp)\t# Mover el segundo flotante al stack\n";
         }
-        // globalPower.output += "\t" + "fadd.s ft0, ft1, ft2\t# Sumar flotantes\n";
+        //ultraPointer += 4;
         // return "ft0";
     } else { //if left is int
         var left = translateExpression(node.children[0]); // return t0
-        if (rightType == "float") { //need to convert left to float
-            globalPower.output += "\t" + "fcvt.s.w ft1, "+left+"\t# Convertir a flotante el primer operador\n";
+        if (rightType == "float") { //need to convert left(t0) to float
+            globalPower.output += "\t" + "fcvt.s.w ft1, t0\t# Convertir a flotante el primer operador\n";
+            globalPower.output += "\t" + "fsw ft1, "+ultraPointer+"(sp)\t# Mover el flotante al stack\n";
+            ultraPointer += 4;
             var right = translateExpression(node.children[1]); //return ft0
-            globalPower.output += "\tfsgnj.s ft2, "+right+", "+right+"\t# Copiar el flotante del 2do operador en ft2\n";
+            globalPower.output += "\t" + "fsw ft0, "+ultraPointer+"(sp)\t# Mover el flotante a stack\n";
+            //ultraPointer += 4;
             //globalPower.output += "\t" + "fadd.s ft0, ft1, "+right+"\t# Sumar flotantes\n";
             //return "ft0";
         } 
         else{ //both are int
-            globalPower.output += "\tmv t1, "+left+"\t# Mover t1 (primer operador)\n";
+            globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack (primer operador)\n";
+            ultraPointer += 4;
             var right = translateExpression(node.children[1]); //if float, return ft0, if int, return t0
-            globalPower.output += "\tmv t2, "+right+"\t# Mover t2 (segundo operador)\n";//(Honestamente podria dejarlo en t0)
+            globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack (segundo operador)\n";
+            //ultraPointer += 4;
+            //globalPower.output += "\tmv t2, t0\t# Mover t2 (segundo operador)\n";//(Honestamente podria dejarlo en t0)
             //return "t0";
         }
     }
@@ -174,5 +222,6 @@ function toIEEE754Hex(num) {
 
 
 export { 
-    translateExpression
+    translateExpression,
+    resetUltraPointer
 };

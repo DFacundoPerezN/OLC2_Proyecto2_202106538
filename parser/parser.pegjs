@@ -149,7 +149,7 @@ relational = left:sum _ op:(">="/"<="/">"/"<")_ right:relational { return create
 	/ sum        
         
 // Arithmetic operations
-sum = left:mul op:("+" / "-") right:sum
+sum = left:mul op:("-" / "+") right:sum
 	{ return createNode(op, [left, right]); } 
     / mul
     

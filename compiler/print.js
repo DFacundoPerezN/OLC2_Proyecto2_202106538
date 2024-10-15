@@ -17,7 +17,7 @@ function translatePrint(node){
             else if(varType == "int"){
                 globalPower.output += "\t#Llevando a imprimir entero\n";
                 globalPower.output += "\t"+"la a1, " + id + "\n";
-                //globalPower.output += "\t"+"lw a0, (a1)\n";
+                globalPower.output += "\t"+"lw a0, (a1)\n";
                 globalPower.output += "\tcall printInt\n";
                 // globalPower.output += "\t"+"li a7, 1\n";
                 // globalPower.output += "\t"+"ecall\n";
@@ -30,31 +30,42 @@ function translatePrint(node){
                 globalPower.output += "\tli a2, 1\t #espacio a imprimir: 1\n";
                 globalPower.output += "\tcall printString\n";
             } else if(varType == "string"){
+                console.log("Trying to print :"+id);
                 var varLength = globalPower.IdMap.get(id).value.length;
                 globalPower.output += "\t"+"la a1, " + id + "\n";
-                globalPower.output += "\t"+"li a2, "+(varLength-1)+"\n";
+                globalPower.output += "\t"+"li a2, "+(varLength-2)+"\n";
                 globalPower.output += "\t"+"call printString\n";
             } else {
                 console.log("Error: Type mismatch: " + varType + " !== " + type);
             }
         }
         else if(type == "string"){
-            globalPower.output += "\t"+"la a1, " + saveStringforPrint(child.value) + "\n";
-            globalPower.output += "\t"+"li a2, "+ (child.value.length-1)+"\n";
-            globalPower.output += "\t"+"call printString\n";
+            if(child.children.length == 0){ //System.out.println(<string>+<string>);
+                globalPower.output += "\t"+"la a1, " + saveStringforPrint(child.value) + "\n";
+                globalPower.output += "\t"+"li a2, "+ (child.value.length-2)+"\n";
+                globalPower.output += "\t"+"call printString\n";
+            } else {
+                translatePrint(child);
+            }            
             //incrementar contador de strings
             globalPower.printCounter++;
         } else if(type == "float"){
             //translateExpression of float
             var exp = translateExpression(child);
-            globalPower.output += "\t"+"fsgnj.s fa0, "+ exp +", "+exp+"\t #Copiar el float: "+exp+" a fa0\n";
+            globalPower.output += "\t"+"fmv.s fa0, ft0\t #Copiar el float: ft0 a fa0\n";
             globalPower.output += "\tcall printFloat\n";
+        }
+        else if(type == "char"){
+            globalPower.output += "\t"+"la a1, " + child.value.charCodeAt(0) + "\n";
+            globalPower.output += "\t"+"li a2, 1\n";
+            globalPower.output += "\t"+"call printString\n";
+            //incrementar contador de strings
+            globalPower.printCounter++;
         } else {
-            //translateExpression
+            //translateExpression int, boolean
             var exp = translateExpression(child);
-            globalPower.output += "\t"+"mv a0, " + exp + "\n";
-            globalPower.output += "\t"+"li a7, 1\n";
-            globalPower.output += "\t"+"ecall\n";
+            globalPower.output += "\t"+"mv a0, t0\n";
+            globalPower.output += "\t"+"call printInt\n";
         }
     }
     globalPower.output += "\tcall printNewline\t# Imprimir un salto de línea\n";

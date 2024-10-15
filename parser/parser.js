@@ -289,7 +289,7 @@ function peg$parse(input, options) {
   var peg$e28 = peg$literalExpectation(">=", false);
   var peg$e29 = peg$literalExpectation("<=", false);
   var peg$e30 = peg$classExpectation(["<", ">"], false, false);
-  var peg$e31 = peg$classExpectation(["+", "-"], false, false);
+  var peg$e31 = peg$classExpectation(["-", "+"], false, false);
   var peg$e32 = peg$classExpectation(["*", "/"], false, false);
   var peg$e33 = peg$literalExpectation("%", false);
   var peg$e34 = peg$literalExpectation("-", false);

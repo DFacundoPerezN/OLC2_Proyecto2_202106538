@@ -1,6 +1,6 @@
 import { globalPower, addSymbol } from "./compiler.js";
 import { getType, getDefaultValue, getNewType } from "./synthesis.js";
-import { translateExpression } from "./expresions.js";
+import { translateExpression, resetUltraPointer } from "./expresions.js";
 import { translatePrint } from "./print.js";
 
 function translateSentence (node) {
@@ -82,13 +82,13 @@ function translateDeclaration(node){
             globalPower.output += "\t" + "la t4, "+ id + "\t# Cargar la dirección\n";
             //If the type is float, the value must be stored in a floating point register
             if( type == 'float'){
-                globalPower.output += "\t" + "fsw "+ exp+ ", (t4) \t# Almacenar el flotante\n";
+                globalPower.output += "\t" + "fsw ft0, (t4) \t# Almacenar el flotante\n";
             } //If the type is char or boolean, the value must be stored in a byte
             else if (type === 'char' || type === 'boolean') { 
-                globalPower.output += "\t" + "sb "+ exp+ ", (t4)\n";
+                globalPower.output += "\t" + "sb t0, (t4)\n";
             }
             else if (type === 'int'){//If the type is int, the value must be stored in a word
-                globalPower.output += "\t" + "sw "+ exp+ ", (t4)\n";
+                globalPower.output += "\t" + "sw t0, (t4)\n";
             } else {
                 globalPower.output += "\t ##TYPE: "+type+" IS NOT IMPLEMENTED YET\n";
                 
@@ -109,7 +109,7 @@ function translateAssignment(node){
     //first node is de id
     let id = node.children[0].value;
     //second node is the expression value
-    let exp = translateExpression(node.children[1]);
+    let exp = translateExpression(node.children[1]);    
     //get the type of the expression
     let type = getType(node.children[1]);
     globalPower.output += "\t" + "la t4, "+ id + "\t# Cargar la dirección\n";
