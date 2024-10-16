@@ -53,11 +53,16 @@ function translateExpression(node) {
             globalPower.output += "\t"+"li t0, " + node.value + "\n";
             return "t0";
         }
-    }else{
-        if(node.type === '+'){
+    }else{        
+        if (node.children.length == 1) {
+            var rightType = getType(node.children[0]);
+        }else{
             console.log('Addition');
             var leftType = getType(node.children[0]);
             var rightType = getType(node.children[1]);
+        }
+
+        if(node.type === '+'){
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
                 floatOperands(); //Mover a ft1 y ft2 los operandos
@@ -72,27 +77,20 @@ function translateExpression(node) {
         else if(node.type === '-'){
             if (node.children.length == 1) {
                 console.log('Unary minus');
-                var rightType = getType(node.children[0]);
                 var right = translateExpression(node.children[0]);//return t0 or ft0
                 if (rightType == "float") {
                     //en ft0 esta el que debemos negar
-                    //globalPower.output += "\t"+"flw ft0, "+ultraPointer+"(sp)\t# Mover a ft0 el flotante\n";
-                    //ultraPointer -= 4;
                     globalPower.output += "\t" + "fneg.s ft0, ft0 \t# Negative float\n";
                     globalPower.output += "\t" + "fsw ft0, "+ultraPointer+"(sp)\t# Guardar el flotante al stack\n";
                     ultraPointer += 4;
                     return "ft0";
                 } else { //if right is int
-                    //globalPower.output += "\t"+"lw t0, "+ultraPointer+"(sp)\t# Mover a t0 el entero\n";
-                    //ultraPointer -= 4;
                     globalPower.output += "\tneg t0, t0\t# Negative\n";
                     globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack\n";
                     ultraPointer += 4;
                     return "t0";
                 }
-            } else {
-                var leftType = getType(node.children[0]);
-                var rightType = getType(node.children[1]);
+            } else { //if node.children.length == 2
                 aritmeticTraductionBase(node, leftType, rightType);
                 if (leftType == "float" || rightType == "float") {
                     floatOperands(); //Mover a ft1 y ft2 los operandos
@@ -106,8 +104,6 @@ function translateExpression(node) {
             }
         } else if(node.type === '*'){
             console.log('Multiplication');
-            var leftType = getType(node.children[0]);
-            var rightType = getType(node.children[1]);
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
                 floatOperands(); //Mover a ft1 y ft2 los operandos
@@ -120,8 +116,6 @@ function translateExpression(node) {
             }
         } else if(node.type === '/'){
             console.log('Division');
-            var leftType = getType(node.children[0]);
-            var rightType = getType(node.children[1]);
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
                 floatOperands(); //Mover a ft1 y ft2 los operandos
@@ -134,8 +128,6 @@ function translateExpression(node) {
             }
         } else if(node.type === '%'){
             console.log('Modulus');
-            var leftType = getType(node.children[0]);
-            var rightType = getType(node.children[1]);
             aritmeticTraductionBase(node, leftType, rightType);
             if (leftType == "float" || rightType == "float") {
                 console.log('Error: Operands must be int → '+leftType+' '+rightType);
@@ -146,48 +138,114 @@ function translateExpression(node) {
             }
         } else if(node.type === '=='){
             getType(node);
-            var leftType = getType(node.children[0]);
-            var rightType = getType(node.children[1]);
             relationalTraductionBase(node, leftType, rightType);
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "feq.s t0, ft1, ft2\t# Comparar flotantes\n";
             } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
                 globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
-            } else if (leftType == "int") {
-                intOperands(); //Mover a t1 y t2 los operandos
-                globalPower.output += "\t" + "xor t3, t1, t2\t# Comparar enteros\n";
-                globalPower.output += "\t" + "seqz t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
-            } else { //if are chars or booleans
-                byteOperands();
-                globalPower.output += "\t" + "xor t3, t1, t2\t\n";
+            } else {
+                if (leftType == "int") {
+                    intOperands(); //Mover a t1 y t2 los operandos
+                } else { //if are chars or booleans
+                    byteOperands();
+                }
+                globalPower.output += "\t" + "xor t3, t1, t2\t# Compara bits\n";
                 globalPower.output += "\t" + "seqz t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
             }
             return "t0";
         } else if(node.type === '!='){
             getType(node);
-            var leftType = getType(node.children[0]);
-            var rightType = getType(node.children[1]);
             relationalTraductionBase(node, leftType, rightType);
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "feq.s t0, ft1, ft2\t# Comparar flotantes\n";
                 globalPower.output += "\txori t0, t0 1	#Changing last bit\n";
             } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
-            } else if (leftType == "int") {
-                intOperands(); //Mover a t1 y t2 los operandos
-                globalPower.output += "\t" + "xor t3, t1, t2\t# Comparar enteros\n";
-                globalPower.output += "\t" + "snez t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
-            } else { //if are chars or booleans
-                byteOperands();
-                globalPower.output += "\t" + "xor t3, t1, t2\t\n";
+                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
+            } else {
+                if (leftType == "int") {
+                    intOperands(); //Mover a t1 y t2 los operandos
+                } else { //if are chars or booleans
+                    byteOperands();
+                }
+                globalPower.output += "\t" + "xor t3, t1, t2\t# Comparar temporales\n";
                 globalPower.output += "\t" + "snez t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
             }
             return "t0";
-        }
+        } else if(node.type === '<='){
+            getType(node);
+            relationalTraductionBase(node, leftType, rightType);
+            if(leftType == "float"  || rightType == "float"){
+                floatOperands(); //Mover a ft1 y ft2 los operandos
+                globalPower.output += "\t" + "fle.s t0, ft1, ft2\t# Comparar flotantes <=\n";
+            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
+                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
+            } else {
+                if (leftType == "int") {
+                    intOperands(); //Mover a t1 y t2 los operandos
+                } else { //if are chars or booleans
+                    byteOperands();
+                }
+                globalPower.output += "\t" + "sgt t3, t1, t2    \t# Compara si t1 > t2\n";
+                globalPower.output += "\t" + "xori t0, t3, 1\t# Se invierte el resultado (1 bit)\n";
+            }
+            return "t0";
+        } else if(node.type === '>='){
+            getType(node);
+            relationalTraductionBase(node, leftType, rightType);
+            if(leftType == "float"  || rightType == "float"){
+                floatOperands(); //Mover a ft1 y ft2 los operandos
+                globalPower.output += "\t" + "fge.s t0, ft1, ft2\t# Comparar flotantes\n";
+            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
+                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
+            } else {
+                if (leftType == "int") {
+                    intOperands(); //Mover a t1 y t2 los operandos
+                } else { //if are chars or booleans
+                    byteOperands();
+                }                
+                globalPower.output += "\t" + "slt t3, t1, t2    \t# Compara si t1 < t2\n";
+                globalPower.output += "\t" + "xori t0, t3, 1\t# Se invierte el resultado (1 bit)\n";
+            }
+            return "t0";
+        } else if(node.type === '<'){
+            getType(node);
+            relationalTraductionBase(node, leftType, rightType);
+            if(leftType == "float"  || rightType == "float"){
+                floatOperands(); //Mover a ft1 y ft2 los operandos
+                globalPower.output += "\t" + "flt.s t0, ft1, ft2\t# Comparar flotantes\n";
+            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
+                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
+            } else {
+                if (leftType == "int") {
+                    intOperands(); //Mover a t1 y t2 los operandos
+                } else { //if are chars or booleans
+                    byteOperands();
+                }                
+                globalPower.output += "\t" + "slt t0, t1, t2    \t# Compara si t1 < t2\n";
+            }
+            return "t0";
+        } else if(node.type === '>'){
+            getType(node);
+            relationalTraductionBase(node, leftType, rightType);
+            if(leftType == "float"  || rightType == "float"){
+                floatOperands(); //Mover a ft1 y ft2 los operandos
+                globalPower.output += "\t" + "fgt.s t0, ft1, ft2\t# Comparar flotantes\n";
+            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
+                globalPower.output += "\t"+"#STRING NOT IMPLEMENTED\n";
+            } else {
+                if (leftType == "int") {
+                    intOperands(); //Mover a t1 y t2 los operandos
+                } else { //if are chars or booleans
+                    byteOperands();
+                }
+                globalPower.output += "\t" + "sgt t0, t1, t2    \t# Compara si t1 > t2\n";
+            }
+            return "t0";
+        } 
         else{
-            console.log('Not implemented yet'); 
+            console.log(node.type+' Not implemented yet'); 
             globalPower.output += "\t"+"li t0, " + node.value + "\n";
             return "t0";
         }
@@ -254,6 +312,10 @@ function byteOperands() {
     ultraPointer -= 1;
     globalPower.output += "\t"+"lb t1, "+ultraPointer+"(sp)\t# Mover a t1 el primer operador\n";
     //ultraPointer -= 1;
+}
+
+function stringOperands() {
+    
 }
 
 function relationalTraductionBase(node, leftType, rightType) {
