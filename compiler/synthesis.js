@@ -102,7 +102,7 @@ function getType(node){
         } else if (left == "float" || right == "float"){
             return "boolean";
         } else {
-            console.log("Semantic Error: Operands must be the same type → "+left+" "+right);
+            throw "Semantic Error: Operands must be the same type → "+left+" "+right;
             return "Semantic Error: Operands must be the same type → "+left+" "+right;
         }
     }
@@ -114,7 +114,7 @@ function getType(node){
         } else if ((left == "int" && right == "float") || (left == "float" && right == "int")){
             return "boolean";
         } else {
-            console.log("Semantic Error: Operands must be the same type → "+left+" "+right);
+            throw ("Semantic Error: Operands must be the same type → "+left+" "+right);
             return "Semantic Error: Operands must be the same type → "+left+" "+right;
         }
     }

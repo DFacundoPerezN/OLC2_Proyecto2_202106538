@@ -289,7 +289,7 @@ function peg$parse(input, options) {
   var peg$e28 = peg$literalExpectation(">=", false);
   var peg$e29 = peg$literalExpectation("<=", false);
   var peg$e30 = peg$classExpectation(["<", ">"], false, false);
-  var peg$e31 = peg$classExpectation(["-", "+"], false, false);
+  var peg$e31 = peg$classExpectation(["+", "-"], false, false);
   var peg$e32 = peg$classExpectation(["*", "/"], false, false);
   var peg$e33 = peg$literalExpectation("%", false);
   var peg$e34 = peg$literalExpectation("-", false);
@@ -440,7 +440,7 @@ function peg$parse(input, options) {
   var peg$f87 = function(id, exp) {return createNode(id.type, [exp]);};
   var peg$f88 = function(int) {return text()};
   var peg$f89 = function() {return text()};
-  var peg$f90 = function(bool) {return bool};
+  var peg$f90 = function(bool) {return bool == "true" ? "1": "0";};
   var peg$f91 = function(a) {return text()};
   var peg$f92 = function() {return text()};
   var peg$f93 = function(val) {return createNodeID(location()?.start.line, location()?.start.column, text());};

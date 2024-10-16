@@ -47,6 +47,18 @@ class Compiler {
     'printFloat:\n'+
 	'\tli a7, 2 \n'+
 	'\tecall\n'+
+    '\tret\n'+
+    //Print Boolean function    	
+    'printBoolean:\n'+
+    '\tbeqz a0, printFalse\n'+
+    '\tla a1, true\n'+
+    '\tli a2, 4\n'+
+    '\tjal t4, printString \n'+
+    '\tret\n'+
+    'printFalse:\n'+
+    '\tla a1, false\n'+
+    '\tli a2, 5\n'+
+    '\tjal t4, printString \n'+
     '\tret\n'
     ;
     }   

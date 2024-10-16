@@ -266,7 +266,7 @@ listDecl = _ id:id _ ":" _ exp:exp _ "," list:listDecl {return [createNode(id.ty
 _ "Whitespace" = [ \t\n\r]*
 entero = int:[0-9]+  						{return text()}
 float "Float" = [0-9]+"."([0-9]+)?  			{return text()}
-boolean =  bool:("true"/ "false") 			{return bool}
+boolean =  bool:("true"/ "false") 			{return bool == "true" ? "1": "0";}
 string "String" = "\"" a:([^"]/escapes)*"\"" 	{return text()}
 char "char" =  "'"[^']"'"_ 					{return text()}
 id "ID" = val:(!reserved [A-Za-z]["_"A-Za-z0-9]*) 		{return createNodeID(location()?.start.line, location()?.start.column, text());}

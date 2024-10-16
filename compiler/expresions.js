@@ -15,7 +15,7 @@ function translateExpression(node) {
             var hexFloat = toIEEE754Hex(node.value);
             console.log('Float value: '+node.value+' in hex: '+hexFloat);
             globalPower.output += "\tli a0, " + hexFloat 
-            + "\t# Cargar el valor binario del flotante\n";
+            + "\t# Cargar el valor binario del flotante "+node.value+"\n";
             globalPower.output += "\tfmv.w.x ft0, a0    "
             +"\t# Mover el valor binario a un registro flotante\n";
             //console.log(globalPower.output);
@@ -40,7 +40,7 @@ function translateExpression(node) {
                 globalPower.output += "\t"+"la t0, " + id + "\n";
                 globalPower.output += "\t"+"li t1, "+(varLength-1)+"\n";
                 globalPower.output += "\t"+"call printString\n";
-                return "t0";
+                return "t0"; 
             } else if (globalPower.IdMap.get(id).value == "null") {
                 globalPower.output += "\tla t0, null\n";
                 return "t0";
@@ -144,7 +144,49 @@ function translateExpression(node) {
                 globalPower.output += "\trem t0, t1, t2\t# Modulo enteros\n";
                 return "t0";
             }
-        } else{
+        } else if(node.type === '=='){
+            getType(node);
+            var leftType = getType(node.children[0]);
+            var rightType = getType(node.children[1]);
+            relationalTraductionBase(node, leftType, rightType);
+            if(leftType == "float"  || rightType == "float"){
+                floatOperands(); //Mover a ft1 y ft2 los operandos
+                globalPower.output += "\t" + "feq.s t0, ft1, ft2\t# Comparar flotantes\n";
+            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
+                globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
+            } else if (leftType == "int") {
+                intOperands(); //Mover a t1 y t2 los operandos
+                globalPower.output += "\t" + "xor t3, t1, t2\t# Comparar enteros\n";
+                globalPower.output += "\t" + "seqz t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
+            } else { //if are chars or booleans
+                byteOperands();
+                globalPower.output += "\t" + "xor t3, t1, t2\t\n";
+                globalPower.output += "\t" + "seqz t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
+            }
+            return "t0";
+        } else if(node.type === '!='){
+            getType(node);
+            var leftType = getType(node.children[0]);
+            var rightType = getType(node.children[1]);
+            relationalTraductionBase(node, leftType, rightType);
+            if(leftType == "float"  || rightType == "float"){
+                floatOperands(); //Mover a ft1 y ft2 los operandos
+                globalPower.output += "\t" + "feq.s t0, ft1, ft2\t# Comparar flotantes\n";
+                globalPower.output += "\txori t0, t0 1	#Changing last bit\n";
+            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
+                globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
+            } else if (leftType == "int") {
+                intOperands(); //Mover a t1 y t2 los operandos
+                globalPower.output += "\t" + "xor t3, t1, t2\t# Comparar enteros\n";
+                globalPower.output += "\t" + "snez t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
+            } else { //if are chars or booleans
+                byteOperands();
+                globalPower.output += "\t" + "xor t3, t1, t2\t\n";
+                globalPower.output += "\t" + "snez t0, t3\t# Si t3 = 0, t1 = 1 (true)\n";
+            }
+            return "t0";
+        }
+        else{
             console.log('Not implemented yet'); 
             globalPower.output += "\t"+"li t0, " + node.value + "\n";
             return "t0";
@@ -206,6 +248,28 @@ function aritmeticTraductionBase(node, leftType, rightType) {//Can be improved t
         }
     }
 }
+
+function byteOperands() {
+    globalPower.output += "\t"+"lb t2, "+ultraPointer+"(sp)\t# Mover a t2 segundo operador\n";
+    ultraPointer -= 1;
+    globalPower.output += "\t"+"lb t1, "+ultraPointer+"(sp)\t# Mover a t1 el primer operador\n";
+    //ultraPointer -= 1;
+}
+
+function relationalTraductionBase(node, leftType, rightType) {
+    if (leftType == "float" || leftType == "int" || rightType == "float" || rightType == "int") {
+        aritmeticTraductionBase(node, leftType, rightType);
+    } else if (leftType == "string"){
+        globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
+    } else {
+        var left = translateExpression(node.children[0]); //if float, return ft0, if int, return t0
+        globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (primer byte)\n";
+        ultraPointer += 1;
+        var right = translateExpression(node.children[1]); //if float, return ft0, if int, return t0
+        globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (segundo byte)\n";        
+    }
+}
+    
 
 function toIEEE754Hex(num) {
     // Crear un buffer de 4 bytes (32 bits)

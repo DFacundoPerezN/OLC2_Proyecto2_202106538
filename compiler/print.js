@@ -35,7 +35,12 @@ function translatePrint(node){
                 globalPower.output += "\t"+"la a1, " + id + "\n";
                 globalPower.output += "\t"+"li a2, "+(varLength-2)+"\n";
                 globalPower.output += "\t"+"call printString\n";
-            } else {
+            }  else if(varType == "boolean"){
+                globalPower.output += "\t"+"la a1, " + id + "\n";
+                globalPower.output += "\t"+"lb a0, (a1)\n";
+                globalPower.output += "\t"+"call printBoolean\n"; 
+            }
+            else {
                 console.log("Error: Type mismatch: " + varType + " !== " + type);
             }
         }
@@ -65,7 +70,11 @@ function translatePrint(node){
             //translateExpression int, boolean
             var exp = translateExpression(child);
             globalPower.output += "\t"+"mv a0, t0\n";
-            globalPower.output += "\t"+"call printInt\n";
+            if (type == "int") {
+                globalPower.output += "\t"+"call printInt\n";
+            } else if (type == "boolean") {
+                globalPower.output += "\t"+"call printBoolean\n";
+            }
         }
     }
     globalPower.output += "\tcall printNewline\t# Imprimir un salto de línea\n";
