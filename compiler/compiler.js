@@ -7,6 +7,8 @@ let globalPower = {
     data: '.data\n',
     output: '.text\n .globl _start\n',
     tagCounter: 0,
+    breakTag: '',
+    continueTag: '',
     printCounter: 0,
     symbolTable: []
 };

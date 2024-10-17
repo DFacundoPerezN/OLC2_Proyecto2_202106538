@@ -3,20 +3,22 @@ import {translateExpression} from './expresions.js';
 import { globalPower } from './compiler.js';
 
 function translateIf(node){
-    let condition = node.children[0];
+    let condition = node.children[0]; 
     let body = node.children[1];
 
     let conditionCode = translateExpression(condition);
-    globalPower.output += '\t# condition: if t0 == 1 continue if not jump to if_false'+globalPower.tagCounter+'\n';
-    globalPower.output += '\tbeqz t0, if_false'+globalPower.tagCounter+'\t# \n\n';
-    globalPower.output += '\t#If body\n';
+    let tag = globalPower.tagCounter;
+
+    globalPower.output += '\t# condition: if t0 == 0 jump to if_false'+globalPower.tagCounter+' if not continue\n'; 
+    globalPower.output += '\tbeqz t0, if_false'+globalPower.tagCounter+'\t# \n\n'; //if t0 == 1 continue to body if not jump to if_false
+    globalPower.tagCounter++;
+
+    globalPower.output += '\t#If_true body\n';
     for (const child of body.children) {
         translateSentence(child);
     }
-    let tag = globalPower.tagCounter;
     globalPower.output += '\tj end_if'+tag+' \t #Jump to end of if\n';
     globalPower.output += 'if_false'+tag+': \n';
-    globalPower.tagCounter++;
 
     if(node.children.length > 2){
 
