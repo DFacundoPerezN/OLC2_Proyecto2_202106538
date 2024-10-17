@@ -61,9 +61,9 @@ function translatePrint(node){
             globalPower.output += "\tcall printFloat\n";
         }
         else if(type == "char"){
-            globalPower.output += "\t"+"la a1, " + child.value.charCodeAt(0) + "\n";
-            globalPower.output += "\t"+"li a2, 1\n";
-            globalPower.output += "\t"+"call printString\n";
+            globalPower.output += "\t"+"li a0, " + child.value + "\n";
+            globalPower.output += "\t"+"li a7, 11\n";
+            globalPower.output += "\t"+"ecall\n";
             //incrementar contador de strings
             globalPower.printCounter++;
         } else {

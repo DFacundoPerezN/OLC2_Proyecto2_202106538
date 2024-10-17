@@ -54,7 +54,7 @@ function translateExpression(node) {
             return "t0";
         }
     }else{        
-        if (node.children.length == 1) {
+        if (node.children.length == 1) {// Used for not operation or unary minus
             var rightType = getType(node.children[0]);
         }else{
             console.log('Addition');
@@ -80,11 +80,15 @@ function translateExpression(node) {
                 var right = translateExpression(node.children[0]);//return t0 or ft0
                 if (rightType == "float") {
                     //en ft0 esta el que debemos negar
+                    // globalPower.output += "\t"+"flw ft0, "+ultraPointer+"(sp)\t# Mover a ft1 el primer operador\n";
+                    // ultraPointer -= 4;
                     globalPower.output += "\t" + "fneg.s ft0, ft0 \t# Negative float\n";
                     globalPower.output += "\t" + "fsw ft0, "+ultraPointer+"(sp)\t# Guardar el flotante al stack\n";
                     ultraPointer += 4;
                     return "ft0";
                 } else { //if right is int
+                    // globalPower.output += "\t"+"lw t0, "+ultraPointer+"(sp)\t# Mover a t0 el primer operador\n";
+                    // ultraPointer -= 4;
                     globalPower.output += "\tneg t0, t0\t# Negative\n";
                     globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack\n";
                     ultraPointer += 4;
@@ -179,8 +183,6 @@ function translateExpression(node) {
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "fle.s t0, ft1, ft2\t# Comparar flotantes <=\n";
-            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
             } else {
                 if (leftType == "int") {
                     intOperands(); //Mover a t1 y t2 los operandos
@@ -197,8 +199,6 @@ function translateExpression(node) {
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "fge.s t0, ft1, ft2\t# Comparar flotantes\n";
-            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
             } else {
                 if (leftType == "int") {
                     intOperands(); //Mover a t1 y t2 los operandos
@@ -215,8 +215,6 @@ function translateExpression(node) {
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "flt.s t0, ft1, ft2\t# Comparar flotantes\n";
-            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
             } else {
                 if (leftType == "int") {
                     intOperands(); //Mover a t1 y t2 los operandos
@@ -243,6 +241,21 @@ function translateExpression(node) {
                 globalPower.output += "\t" + "sgt t0, t1, t2    \t# Compara si t1 > t2\n";
             }
             return "t0";
+        } else if(node.type === '&&'){
+            getType(node);
+            byteTraductionBase(node); //Operaciones para guardar los operandos en el stack
+            byteOperands(); //Mover a t1 y t2 los operandos en bytes
+            globalPower.output += "\t" + "and t0, t1, t2\t# AND de enteros\n";
+        } else if(node.type === '||'){
+            getType(node);
+            byteTraductionBase(node); //Operaciones para guardar los operandos en el stack
+            byteOperands(); //Mover a t1 y t2 los operandos en bytes
+            globalPower.output += "\t" + "or t0, t1, t2\t# OR de enteros\n";
+        } else if(node.type === '!'){
+            var right = translateExpression(node.children[0]);//return t0 or ft0
+            //ultraPointer -= 4; //1
+            globalPower.output += "\txori t0, t0, 1\t\n";
+            //ultraPointer += 4; //1
         } 
         else{
             console.log(node.type+' Not implemented yet'); 
@@ -309,7 +322,7 @@ function aritmeticTraductionBase(node, leftType, rightType) {//Can be improved t
 
 function byteOperands() {
     globalPower.output += "\t"+"lb t2, "+ultraPointer+"(sp)\t# Mover a t2 segundo operador\n";
-    ultraPointer -= 1;
+    ultraPointer -= 4; //1
     globalPower.output += "\t"+"lb t1, "+ultraPointer+"(sp)\t# Mover a t1 el primer operador\n";
     //ultraPointer -= 1;
 }
@@ -319,19 +332,24 @@ function stringOperands() {
 }
 
 function relationalTraductionBase(node, leftType, rightType) {
-    if (leftType == "float" || leftType == "int" || rightType == "float" || rightType == "int") {
+    if (leftType == "float") {
+        aritmeticTraductionBase(node, leftType, rightType);
+    } else if (leftType == "int") { 
         aritmeticTraductionBase(node, leftType, rightType);
     } else if (leftType == "string"){
         globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
     } else {
-        var left = translateExpression(node.children[0]); //if float, return ft0, if int, return t0
-        globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (primer byte)\n";
-        ultraPointer += 1;
-        var right = translateExpression(node.children[1]); //if float, return ft0, if int, return t0
-        globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (segundo byte)\n";        
+        byteTraductionBase(node);      
     }
 }
     
+function byteTraductionBase(node) {
+    var left = translateExpression(node.children[0]); //if float, return ft0, if int, return t0
+    globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (primer byte)\n";
+    ultraPointer += 4; //1
+    var right = translateExpression(node.children[1]); //if float, return ft0, if int, return t0
+    globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (segundo byte)\n";
+}
 
 function toIEEE754Hex(num) {
     // Crear un buffer de 4 bytes (32 bits)

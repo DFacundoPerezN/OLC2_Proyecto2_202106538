@@ -2,6 +2,7 @@ import { globalPower, addSymbol } from "./compiler.js";
 import { getType, getDefaultValue, getNewType } from "./synthesis.js";
 import { translateExpression, resetUltraPointer } from "./expresions.js";
 import { translatePrint } from "./print.js";
+import { translateIf } from "./conditionals.js";
 
 function translateSentence (node) {
     if (node.type === 'declaration') {
@@ -10,9 +11,9 @@ function translateSentence (node) {
         translateAssignment(node);
     } else if (node.type === 'print') {
         translatePrint(node);
-    } // else if (node.type === 'if') {
-    //     translateIf(node);
-    // } else if (node.type === 'while') {
+    } else if (node.type === 'if') {
+        translateIf(node);
+    } // else if (node.type === 'while') {
     //     translateWhile(node);
     // } else if (node.type === 'for') {
     //     translateFor(node);
