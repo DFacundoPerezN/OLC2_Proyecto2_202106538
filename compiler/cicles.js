@@ -55,7 +55,8 @@ function translateFor(node){
     for (const child of body.children) {
         translateSentence(child);
     }
-    translateExpression(increment);
+    globalPower.output += '\t# Change of local variable\n';   
+    translateSentence(increment);
 
     globalPower.output += '\tj '+forTag+' \t #Jump to for\n';
     globalPower.output += endTag+': \n';

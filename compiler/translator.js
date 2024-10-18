@@ -3,7 +3,7 @@ import { getType, getDefaultValue, getNewType } from "./synthesis.js";
 import { translateExpression, resetUltraPointer } from "./expresions.js";
 import { translatePrint } from "./print.js";
 import { translateIf } from "./conditionals.js";
-import { translateWhile } from "./cicles.js";
+import { translateWhile, translateFor } from "./cicles.js";
 
 function translateSentence (node) {
     if (node.type === 'declaration') {
@@ -16,9 +16,9 @@ function translateSentence (node) {
         translateIf(node);
     } else if (node.type === 'while') {
         translateWhile(node);
-    } //else if (node.type === 'for') {
-    //     translateFor(node);
-    // } else if (node.type === 'forEach') {
+    } else if (node.type === 'for') {
+        translateFor(node);
+    } //else if (node.type === 'forEach') {
     //     translateForEach(node);
     // }
     // else if (node.type === 'switch') {
@@ -159,7 +159,7 @@ function reDeclaration(node){
     }
     //Translate the value
     let exp = translateExpression(node.children[2]);
-    
+
     globalPower.output += "\t" + "la t4, "+ id + "\t# Cargar la dirección\n";
     //If the type is float, the value must be stored in a floating point register
     if( type == 'float'){
