@@ -2,7 +2,7 @@ import { globalPower, addSymbol } from "./compiler.js";
 import { getType, getDefaultValue, getNewType } from "./synthesis.js";
 import { translateExpression, resetUltraPointer } from "./expresions.js";
 import { translatePrint } from "./print.js";
-import { translateIf } from "./conditionals.js";
+import { translateIf, translateSwitch } from "./conditionals.js";
 import { translateWhile, translateFor } from "./cicles.js";
 
 function translateSentence (node) {
@@ -18,12 +18,22 @@ function translateSentence (node) {
         translateWhile(node);
     } else if (node.type === 'for') {
         translateFor(node);
-    } //else if (node.type === 'forEach') {
+    } else if(node.type === 'break'){
+        if (globalPower.breakTag === '') {
+            console.log('Error: Break statement outside of a loop');
+            throw new Error('Break statement outside of a loop');
+        } else {
+            globalPower.output += '\tj '+globalPower.breakTag+'\n';
+        }
+    } else if(node.type === 'continue'){
+        return 'continue';
+    } else if (node.type === 'switch') {
+        translateSwitch(node);
+    }
+    //else if (node.type === 'forEach') {
     //     translateForEach(node);
     // }
-    // else if (node.type === 'switch') {
-    //     translateSwitch(node);
-    // } else if(node.type === 'array_declaration'){
+    // else if(node.type === 'array_declaration'){
     //     translateArrayDec(node);
     // } else if(node.type === 'array_assign'){
     //     translateArrayAssign(node);
@@ -39,10 +49,6 @@ function translateSentence (node) {
     //     translateStructDec(node);
     // } else if(node.type === 'structAssign'){
     //     translateStructAssing(node);  
-    // } else if(node.type === 'break'){
-    //     return 'break';
-    // } else if(node.type === 'continue'){
-    //     return 'continue';
     // } else if(node.type === 'return'){
     //     return 'return';
     // }

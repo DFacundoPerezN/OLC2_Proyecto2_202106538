@@ -367,5 +367,8 @@ function toIEEE754Hex(num) {
 
 export { 
     translateExpression,
-    resetUltraPointer
+    resetUltraPointer,
+    intOperands,
+    floatOperands,
+    byteOperands
 };
