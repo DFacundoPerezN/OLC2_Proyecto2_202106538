@@ -3,7 +3,7 @@ import { getType, getDefaultValue, getNewType } from "./synthesis.js";
 import { translateExpression, resetUltraPointer } from "./expresions.js";
 import { translatePrint } from "./print.js";
 import { translateIf, translateSwitch } from "./conditionals.js";
-import { translateWhile, translateFor } from "./cicles.js";
+import { translateWhile, translateFor, translateForEach } from "./cicles.js";
 import { translateArrayDec,translateArrayAssign } from "./arrays.js";
 
 function translateSentence (node) {
@@ -40,22 +40,22 @@ function translateSentence (node) {
     } else if(node.type === 'array_assign'){
          translateArrayAssign(node);
     }
-    //else if (node.type === 'forEach') {
-    //     translateForEach(node);
-    // } else if(node.value === 'function'){
+    else if (node.type === 'forEach') {
+        translateForEach(node);
+    } //else if(node.value === 'function'){
     //     translateFunction(node);
     // } else if(node.type === 'void'){
     //     translateVoid(node);
     // } else if(node.type === 'call'){
     //     translateCall(node); 
+    // } else if(node.type === 'return'){
+    //     return 'return';
     // } else if(node.type === 'struct'){
     //     translateStructPrototype(node);
     // } else if(node.type === 'structDeclaration'){
     //     translateStructDec(node);
     // } else if(node.type === 'structAssign'){
     //     translateStructAssing(node);  
-    // } else if(node.type === 'return'){
-    //     return 'return';
     // }
     
     globalPower.output += "\n";
@@ -115,7 +115,7 @@ function translateDeclaration(node){
         //add the variable to the map; the id is the key to an object with the type and the value
         globalPower.IdMap.set(id, { type, value }); 
     }
-     //Translate the declaration with default value
+    //Translate the declaration with default value
     globalPower.data += "\t" + id + ": ."+getNewType(type)+" " + value + "\n";
     addSymbol(id, type, 'variable', node.children[1].line, node.children[1].column);
     console.log(globalPower.IdMap);
