@@ -410,7 +410,7 @@ function peg$parse(input, options) {
   var peg$f58 = function(listelement, listcons) {return [listelement].concat(listcons);};
   var peg$f59 = function(listelement) {return [listelement]};
   var peg$f60 = function(id, Aexp) { return createNode("array_declaration", [ id, Aexp]); };
-  var peg$f61 = function(type, cor, id) { return createNode("init", [ type, cor, id ]); };
+  var peg$f61 = function(type, cor, id) { return createNode(type, [ cor, id ]); };
   var peg$f62 = function(type, intg) {return createNode("new", [type, intg]);};
   var peg$f63 = function(list) { return createNode("list", list); };
   var peg$f64 = function(id, intg, exp) { return createNode("array_assign", [id, intg, exp]); };

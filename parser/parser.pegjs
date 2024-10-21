@@ -202,7 +202,7 @@ listcons = listelement:exp "," listcons:listcons {return [listelement].concat(li
 //Arrays
 arrayDecl = id:arrayCons _ "="_ Aexp:arrayExp { return createNode("array_declaration", [ id, Aexp]); }
 
-arrayCons = type:type _ cor:"[]" _ id:id { return createNode("init", [ type, cor, id ]); }
+arrayCons = type:type _ cor:"[]" _ id:id { return createNode(type, [ cor, id ]); }
 arrayExp = "new" _ type:type _ "["_ intg:exp _"]" {return createNode("new", [type, intg]);}
 	/ id
 	/ "{" _ list:listcons _ "}"  { return createNode("list", list); }

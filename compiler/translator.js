@@ -4,6 +4,7 @@ import { translateExpression, resetUltraPointer } from "./expresions.js";
 import { translatePrint } from "./print.js";
 import { translateIf, translateSwitch } from "./conditionals.js";
 import { translateWhile, translateFor } from "./cicles.js";
+import { translateArrayDec,translateArrayAssign } from "./arrays.js";
 
 function translateSentence (node) {
     if (node.type === 'declaration') {
@@ -26,17 +27,21 @@ function translateSentence (node) {
             globalPower.output += '\tj '+globalPower.breakTag+'\n';
         }
     } else if(node.type === 'continue'){
-        return 'continue';
+        if (globalPower.continueTag === '') {
+            console.log('Error: Continue statement outside of a loop');
+            throw new Error('Continue statement outside of a loop');
+        } else {
+            globalPower.output += '\tj '+globalPower.continueTag+'\n';
+        }
     } else if (node.type === 'switch') {
         translateSwitch(node);
+    } else if(node.type === 'array_declaration'){
+         translateArrayDec(node);
+    } else if(node.type === 'array_assign'){
+         translateArrayAssign(node);
     }
     //else if (node.type === 'forEach') {
     //     translateForEach(node);
-    // }
-    // else if(node.type === 'array_declaration'){
-    //     translateArrayDec(node);
-    // } else if(node.type === 'array_assign'){
-    //     translateArrayAssign(node);
     // } else if(node.value === 'function'){
     //     translateFunction(node);
     // } else if(node.type === 'void'){

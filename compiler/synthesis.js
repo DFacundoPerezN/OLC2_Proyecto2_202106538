@@ -9,7 +9,7 @@ function getDefaultValue(type) {
         case 'float':
             return 0.0;
         case 'char':
-            return ' ';
+            return '0';
         case 'array':
             return [];
         case 'object':
@@ -146,6 +146,13 @@ function getType(node){
             console.log("Error: Variable "+id+" not declared");
             throw "Error: Variable "+id+" not declared";
         }
+    }
+    else if(node.type === "arrayValue"){
+        let id = node.children[0].value;
+        let array = globalPower.IdMap.get(id);
+        let type = array.type;
+        console.log("Array: "+id+" of type: "+type);
+        return type;
     }
 }
 

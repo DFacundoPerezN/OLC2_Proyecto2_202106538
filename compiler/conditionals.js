@@ -111,7 +111,6 @@ function translateCase(node, tag, i){
     //the value of the switch is in t5 or ft5
     //the value of the case is the first child
     let value = node.children[0];
-    let body = node.children[1];
 
     let type = getType(value);
     translateExpression(value);
@@ -123,8 +122,6 @@ function translateCase(node, tag, i){
     } else {
         globalPower.output += '\tbeq t0, t5, case_'+tag+'_'+i+'\t# Salta si son iguales\n';
     }
-
-
     
 }
 

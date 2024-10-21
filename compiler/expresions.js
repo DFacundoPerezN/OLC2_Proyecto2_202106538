@@ -1,6 +1,7 @@
 import { globalPower } from "./compiler.js";
 import { getType } from "./synthesis.js";
 import { translateSentence } from "./translator.js";
+import { arrayValue } from "./arrays.js"
 
 let ultraPointer = 0;
 function resetUltraPointer() {
@@ -53,7 +54,12 @@ function translateExpression(node) {
             globalPower.output += "\t"+"li t0, " + node.value + "\n";
             return "t0";
         }
-    }else{        
+    }else{  
+        if(node.type === 'arrayValue'){
+            console.log('Array Value');
+            return arrayValue(node);
+        }
+        
         if (node.children.length == 1) {// Used for not operation or unary minus
             var rightType = getType(node.children[0]);
         }else{

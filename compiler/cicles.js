@@ -8,10 +8,10 @@ function translateWhile(node){
     let body = node.children[1];
 
     var whileTag = 'while_'+globalPower.tagCounter
-    globalPower.continueTag = whileTag + ':'; //continue tag
+    globalPower.continueTag = whileTag; //continue tag
 
     var endTag = 'end_while_'+globalPower.tagCounter;
-    globalPower.breakTag = endTag + ':'; //break tag
+    globalPower.breakTag = endTag; //break tag
 
     globalPower.tagCounter++; //increment tag counter
 
@@ -39,10 +39,12 @@ function translateFor(node){
     let body = node.children[3];
 
     var forTag = 'for_'+globalPower.tagCounter
-    globalPower.continueTag = forTag + ':'; //continue tag
 
     var endTag = 'end_for_'+globalPower.tagCounter;
-    globalPower.breakTag = endTag + ':'; //break tag
+    globalPower.breakTag = endTag; //break tag
+
+    var continueTag = 'continue_for_'+globalPower.tagCounter;
+    globalPower.continueTag = continueTag; //continue tag
 
     globalPower.tagCounter++; //increment tag counter
 
@@ -56,6 +58,8 @@ function translateFor(node){
         translateSentence(child);
     }
     globalPower.output += '\t# Change of local variable\n';   
+    
+    globalPower.output += continueTag+': #Jump for continue\n';
     translateSentence(increment);
 
     globalPower.output += '\tj '+forTag+' \t #Jump to for\n';
