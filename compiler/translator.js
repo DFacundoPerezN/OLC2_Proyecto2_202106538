@@ -5,6 +5,7 @@ import { translatePrint } from "./print.js";
 import { translateIf, translateSwitch } from "./conditionals.js";
 import { translateWhile, translateFor, translateForEach } from "./cicles.js";
 import { translateArrayDec,translateArrayAssign } from "./arrays.js";
+import { translateVoid,translateFunction } from "./functions.js";
 
 function translateSentence (node) {
     if (node.type === 'declaration') {
@@ -42,13 +43,14 @@ function translateSentence (node) {
     }
     else if (node.type === 'forEach') {
         translateForEach(node);
-    } //else if(node.value === 'function'){
-    //     translateFunction(node);
-    // } else if(node.type === 'void'){
-    //     translateVoid(node);
-    // } else if(node.type === 'call'){
-    //     translateCall(node); 
-    // } else if(node.type === 'return'){
+    } else if(node.type === 'void'){
+        translateVoid(node);
+    } else if(node.value === 'function'){
+        translateFunction(node);
+    } else if(node.type === 'call'){
+        let id = node.children[0].value;
+        globalPower.output += '\tcall '+id+' # function call\n'; 
+    } // else if(node.type === 'return'){
     //     return 'return';
     // } else if(node.type === 'struct'){
     //     translateStructPrototype(node);
