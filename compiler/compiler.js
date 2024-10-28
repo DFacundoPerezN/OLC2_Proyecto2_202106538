@@ -36,9 +36,9 @@ class Compiler {
     '\tret \n\n'+
     //Print new line function
     'printNewline:\n'+
-    '\tla a1, newline         # Cargar la direccion del salto de linea"\n'+
-    '\tli a2, 1               # Longitud de 1 byte"\n'+
-    '\tjal t4, printString \n'+
+    '\tli a0, \'\\n\'         # Cargar la direccion del salto de linea"\n'+
+    '\tli a7, 11              # Longitud de 1 byte"\n'+
+    '\tecall \n'+
     '\tret\n'+
     //Print Integer function
     'printInt:\n'+

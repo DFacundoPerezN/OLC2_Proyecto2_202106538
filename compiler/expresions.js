@@ -1,7 +1,8 @@
 import { globalPower } from "./compiler.js";
 import { getType } from "./synthesis.js";
 import { translateSentence } from "./translator.js";
-import { arrayValue } from "./arrays.js"
+import { arrayValue, translateIndexOf } from "./arrays.js"
+import { translateFunction } from "./functions.js";
 
 let ultraPointer = 0;
 function resetUltraPointer() {
@@ -48,7 +49,7 @@ function translateExpression(node) {
             } else {
                 console.log("Error: Type mismatch: " + varType + " !== " + type);
             }
-        }
+        } 
         // I think there are missing specifications for other types// Creo que faltan especificaciones para otros tipos
         else { 
             globalPower.output += "\t"+"li t0, " + node.value + "\n";
@@ -58,6 +59,23 @@ function translateExpression(node) {
         if(node.type === 'arrayValue'){
             console.log('Array Value');
             return arrayValue(node);
+        } else if(node.type === 'length'){
+            const id = node.children[0].value;
+            let length = globalPower.IdMap.get(id).value.length;
+            globalPower.output += "\t"+"li t0, "+length+"\t #agregando la longuitud a t0\n";
+            return "t0";
+        } else if(node.type === 'indexOf'){
+            console.log('IndexOf');
+            return translateIndexOf(node);
+        }
+        else if(node.type === 'call'){
+            const type = getType(node);
+            const id = node.children[0].value;
+            const parameters = node.children[1];
+            //save the parameters in the stack
+
+            globalPower.output += '\tcall '+id+' # function call\n';
+            return type == 'float' ? 'ft0' : 't0';
         }
         
         if (node.children.length == 1) {// Used for not operation or unary minus

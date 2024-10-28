@@ -50,9 +50,12 @@ function translateSentence (node) {
     } else if(node.type === 'call'){
         let id = node.children[0].value;
         globalPower.output += '\tcall '+id+' # function call\n'; 
-    } // else if(node.type === 'return'){
-    //     return 'return';
-    // } else if(node.type === 'struct'){
+    } else if(node.type === 'return'){
+        if (node.children.length !== 0) {
+            let exp = translateExpression(node.children[0]);
+        }
+        globalPower.output += '\tret\n';
+    } // else if(node.type === 'struct'){
     //     translateStructPrototype(node);
     // } else if(node.type === 'structDeclaration'){
     //     translateStructDec(node);

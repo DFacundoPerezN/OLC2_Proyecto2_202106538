@@ -1,6 +1,7 @@
 import { getType } from "./synthesis.js";
 import { globalPower } from "./compiler.js";
 import { translateExpression } from "./expresions.js";
+import { printJoin } from "./arrays.js";
 
 function translatePrint(node, call= 'call'){
     for (const child of node.children) {
@@ -43,6 +44,10 @@ function translatePrint(node, call= 'call'){
             else {
                 console.log("Error: Type mismatch: " + varType + " !== " + type);
             }
+        }
+        else if(child.type == "join"){
+            console.log("Printing join");
+            printJoin(child.children[0].value);
         }
         else if(type == "string"){
             if(child.children.length == 0){ //System.out.println(<string>+<string>);

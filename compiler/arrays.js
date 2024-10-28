@@ -120,9 +120,107 @@ function translateArrayAssign(node){
     return "t0";
 }
 
+function printJoin(identifier, call = 'call'){
+    const length = globalPower.IdMap.get(identifier).value.length;
+    const varType = globalPower.IdMap.get(identifier).type;
+    globalPower.output += "# Printing Join\n";
+    globalPower.output += "\t"+"la t5, " + identifier + " # Load array direcction\n";
+    globalPower.output += "\t"+"li t6, "+length+" # Load array length\n";
+
+    globalPower.output += "join_"+globalPower.tagCounter+": \n";
+    globalPower.output += "\t"+"beqz t6, end_join_"+globalPower.tagCounter+" # Si es igual a 0 termina\n";
+    switch (varType) {
+        case 'int':
+            globalPower.output += "\t"+"lw t0, (t5) # Load int value\n";
+            globalPower.output += "\t"+"mv a0, t0\n";
+            globalPower.output += "\t"+call+" printInt\n";
+            globalPower.output += "\t"+"addi t5, t5, 4 # Move to next value\n";
+            break;
+        case 'float':
+            globalPower.output += "\t"+"flw ft0, (t5) # Load float value\n";
+            globalPower.output += "\t"+"fmv.s fa0, ft0\t #Copiar el float: ft0 a fa0\n";
+            globalPower.output += "\t"+call+" printFloat\n";
+            globalPower.output += "\t"+"addi t5, t5, 4 # Move to next value\n";
+            break;
+        case 'char':
+            globalPower.output += "\t"+"lb a1, (t5) # Load byte value\n";
+            globalPower.output += "\tli a2, 1\t #espacio a imprimir: 1\n";
+            globalPower.output += "\t"+call+" printString\n";
+            globalPower.output += "\t"+"addi t5, t5, 1 # Move to next value\n";
+            break;
+        case 'boolean':
+            globalPower.output += "\t"+"lb t0, (t5) # Load byte value\n";
+            globalPower.output += "\t"+"mv a0, t0\n";
+            globalPower.output += "\t"+call+" printBoolean\n";
+            globalPower.output += "\t"+"addi t5, t5, 1 # Move to next value\n";
+            break;
+        default:
+            console.log('Error: Type not supported');
+            break;
+    }
+    globalPower.output += "\t"+"addi t6, t6, -1 # Decrement counter\n";
+    globalPower.output += "\t"+"beqz t6, end_join_"+globalPower.tagCounter+" # Si es igual a 0 termina\n";
+
+    globalPower.output += "\t li a0, ','"+ "\n"+
+                        "\t li a7, 11 \n"+
+                        "\t ecall \n";
+
+    globalPower.output += "\t li a0, ' '"+ "\n"+
+                        "\t li a7, 11 \n"+
+                        "\t ecall \n";
+
+    globalPower.output += "\t"+"j join_"+globalPower.tagCounter+" # Repeat\n"
+                        + "end_join_"+globalPower.tagCounter+":\n";
+                        
+    globalPower.tagCounter++;
+}
+
+function translateIndexOf(node){
+    //first node is the id of the array
+    const id = node.children[0].value;
+    if (!globalPower.IdMap.has(id)){
+        throw "Error: Array "+id+" not declared (array no declarado)";
+    }
+    //second node is the expression value
+    const exp = translateExpression(node.children[1]); //the value of the expression is in t0 or ft0
+    globalPower.output += "\t# Searching index of array\n";
+    const length = globalPower.IdMap.get(id).value.length;
+    const varType = globalPower.IdMap.get(id).type;
+    globalPower.output += "\t"+"li t3, -1 \t# t3 = -1\n";
+    globalPower.output += "\tmv t4, zero \t# t4 = 0\n";
+    globalPower.output += "\t"+"la t5, " + id + " # Load array direcction\n";
+    globalPower.output += "\t"+"li t6, "+length+" # Load array length\n";
+
+    globalPower.output += "indexS_"+globalPower.tagCounter+": \n";
+    globalPower.output += "\t"+"beq t4, t6, end_indexS_"+globalPower.tagCounter+" # Si t4=t6 termina\n";
+    if(varType === 'float'){        
+        globalPower.output += "\t"+"flw ft1, (t5) # Load float value\n";
+        globalPower.output += "\t"+"fsgt ft2, ft1, ft0 # Compare float values\n";
+        globalPower.output += "\tbeqz ft2, found_"+globalPower.tagCounter+" # If the value is found\n";
+        globalPower.output += "\t"+"addi t5, t5, 4\t# bytes de .float\n";
+    } else if(varType === 'int'){
+        globalPower.output += "\tlw t1, (t5)\t#\n";
+        globalPower.output += "\t"+"beq t1, t0, found_"+globalPower.tagCounter+" # If the value is found\n";
+        globalPower.output += "\t"+"addi t5, t5, 4\t# bytes de .word\n";
+    } else{
+        globalPower.output += "\tlb t1, (t5)\t#\n";
+        globalPower.output += "\t"+"beq t1, t0, found_"+globalPower.tagCounter+" # If the value is found\n";
+        globalPower.output += "\t"+"addi t5, t5, 1\t# bytes de .word\n";
+    }
+    globalPower.output += "\taddi t4, t4, 1\n";
+    globalPower.output += "\tj indexS_"+globalPower.tagCounter+" \n";
+    globalPower.output += "found_"+globalPower.tagCounter+": \n";
+    globalPower.output += "\tmv t3, t4 \t# t3 = t4\n";
+    globalPower.output += "end_indexS_"+globalPower.tagCounter+": \n";
+    globalPower.output += "\tmv t0,t3 \t# t0 = t3\n";
+    globalPower.tagCounter++;
+    return 't0';
+}
 
 export { 
     translateArrayDec,
     arrayValue,
-    translateArrayAssign
+    translateArrayAssign,
+    printJoin,
+    translateIndexOf
 };

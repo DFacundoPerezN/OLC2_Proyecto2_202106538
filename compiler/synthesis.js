@@ -154,6 +154,24 @@ function getType(node){
         console.log("Array: "+id+" of type: "+type);
         return type;
     }
+    else if(node.type === "call"){
+        let id = node.children[0].value;
+        let type = globalPower.IdMap.get(id).type;
+        return type;
+    }
+    else if (node.type === "length"){
+        return "int";
+    } 
+    else if (node.type === "join"){
+        return node.type;
+    }
+    else if (node.type === "indexOf"){
+        return "int";
+    }
+    else {
+        console.log("Error: Tipo de dato no soportado");
+        return null;
+    }
 }
 
 export {
