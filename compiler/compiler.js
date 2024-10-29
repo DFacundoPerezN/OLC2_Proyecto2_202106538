@@ -66,8 +66,8 @@ class Compiler {
     }   
 
     resetOutput() {  
-        globalPower.data = '.data\n\tnewline: .byte 10'+
-                '\n\tnull: .string "null"\n\ttrue: .string "true"\n\tfalse: .string "false"\n';
+        globalPower.data = '.data\n'+
+                '\tnull: .string "null"\n\ttrue: .string "true"\n\tfalse: .string "false"\n';
         globalPower.output = '.text \n.globl _start\n\n_start:\n';
         globalPower.tagCounter = 0;
         globalPower.printCounter = 0;

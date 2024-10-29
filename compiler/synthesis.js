@@ -167,6 +167,8 @@ function getType(node){
     }
     else if (node.type === "indexOf"){
         return "int";
+    } else if (node.type === "typeof" || node.type === "toUpperCase" || node.type === "toLowerCase"){
+        return "string";
     }
     else {
         console.log("Error: Tipo de dato no soportado");

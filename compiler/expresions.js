@@ -170,8 +170,6 @@ function translateExpression(node) {
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "feq.s t0, ft1, ft2\t# Comparar flotantes\n";
-            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
             } else {
                 if (leftType == "int") {
                     intOperands(); //Mover a t1 y t2 los operandos
@@ -189,8 +187,6 @@ function translateExpression(node) {
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "feq.s t0, ft1, ft2\t# Comparar flotantes\n";
                 globalPower.output += "\txori t0, t0 1	#Changing last bit\n";
-            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING NOT EQUAL NOT IMPLEMENTED\n";
             } else {
                 if (leftType == "int") {
                     intOperands(); //Mover a t1 y t2 los operandos
@@ -254,8 +250,6 @@ function translateExpression(node) {
             if(leftType == "float"  || rightType == "float"){
                 floatOperands(); //Mover a ft1 y ft2 los operandos
                 globalPower.output += "\t" + "fgt.s t0, ft1, ft2\t# Comparar flotantes\n";
-            } else if(leftType == "string" && rightType == "string"){// if(leftType == "string" && rightType == "string")
-                globalPower.output += "\t"+"#STRING NOT IMPLEMENTED\n";
             } else {
                 if (leftType == "int") {
                     intOperands(); //Mover a t1 y t2 los operandos
@@ -351,7 +345,22 @@ function byteOperands() {
     //ultraPointer -= 1;
 }
 
-function stringOperands() {
+function stringExpression(node) {
+    console.log('String operands in relational operation');
+    if(node.type === '+'){
+        console.log('"Concatenation"');
+        stringTraductionBase(node)
+        byteOperands();
+        globalPower.output += "\t"+"add t0, t1, t2\n";
+    } else if(node.type === 'identifier'){
+        const id = node.value;
+        const value = globalPower.IdMap.get(id).value.length - 3;
+        globalPower.output += "\t"+"li t0, " + value + "\n";
+    } else {
+        console.log('String value: ',node);
+        const value = node.value.length - 2;
+        globalPower.output += "\t"+"li t0, " + value + "\n";
+    }
     
 }
 
@@ -361,12 +370,21 @@ function relationalTraductionBase(node, leftType, rightType) {
     } else if (leftType == "int") { 
         aritmeticTraductionBase(node, leftType, rightType);
     } else if (leftType == "string"){
-        globalPower.output += "\t"+"#STRING EQUAL NOT IMPLEMENTED\n";
+        stringTraductionBase(node);
     } else {
         byteTraductionBase(node);      
     }
 }
     
+function stringTraductionBase(node) {
+    console.log('Saving string in stack');
+    var left = stringExpression(node.children[0]); //if float, return ft0, if int, return t0
+    globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack (primer byte)\n";
+    ultraPointer += 4; //1
+    var right = stringExpression(node.children[1]); //if float, return ft0, if int, return t0
+    globalPower.output += "\t"+"sw t0, "+ultraPointer+"(sp)\t# Mover a stack (segundo byte)\n";
+}
+
 function byteTraductionBase(node) {
     var left = translateExpression(node.children[0]); //if float, return ft0, if int, return t0
     globalPower.output += "\t"+"sb t0, "+ultraPointer+"(sp)\t# Mover a stack (primer byte)\n";

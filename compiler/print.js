@@ -49,6 +49,17 @@ function translatePrint(node, call= 'call'){
             console.log("Printing join");
             printJoin(child.children[0].value);
         }
+        else if(child.type == "typeof"){
+            translatePrintTypeOf(child);
+        }
+        else if(child.type == "toUpperCase"){
+            var chain = child.children[0].value;
+            translatePrintUpper(chain);
+        }
+        else if(child.type == "toLowerCase"){
+            var chain = child.children[0].value;
+            translatePrintLower(chain);
+        }
         else if(type == "string"){
             if(child.children.length == 0){ //System.out.println(<string>+<string>);
                 globalPower.output += "\t"+"la a1, " + saveStringforPrint(child.value) + "\n";
@@ -89,6 +100,35 @@ function saveStringforPrint(value){
     let id = "print_" + globalPower.printCounter.toString();
     globalPower.data += "\t" + id +": .asciz " + value + "\n";
     return id;
+}
+
+function translatePrintTypeOf(node){
+    const type = getType(node.children[0]);
+    for ( const character of type){
+        globalPower.output += "\t"+"li a0, " + character.charCodeAt(0) + "\n";
+        globalPower.output += "\t"+"li a7, 11\n";
+        globalPower.output += "\t"+"ecall\n";
+    }
+}
+function translatePrintUpper(chain){
+    for ( const character of chain){
+        globalPower.output += "\t"+"li a0, " + character.charCodeAt(0) + "\n";
+        if(character.charCodeAt(0) > 96 && character.charCodeAt(0) < 123){
+            globalPower.output += "\t"+"addi a0, a0, -32\n";
+        }
+        globalPower.output += "\t"+"li a7, 11\n";
+        globalPower.output += "\t"+"ecall\n";
+    }
+}
+function translatePrintLower(chain){
+    for ( const character of chain){
+        globalPower.output += "\t"+"li a0, " + character.charCodeAt(0) + "\n";
+        if(character.charCodeAt(0) > 64 && character.charCodeAt(0) < 91){
+            globalPower.output += "\t"+"addi a0, a0, 32\n";
+        }
+        globalPower.output += "\t"+"li a7, 11\n";
+        globalPower.output += "\t"+"ecall\n";
+    }
 }
 
 export {
